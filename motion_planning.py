@@ -5,7 +5,7 @@ import utm
 from enum import Enum, auto
 
 import numpy as np
-
+import csv
 from planning_utils import a_star, heuristic, create_grid, prune_path
 from udacidrone import Drone
 from udacidrone.connection import MavlinkConnection
@@ -121,23 +121,24 @@ class MotionPlanning(Drone):
         self.target_position[2] = TARGET_ALTITUDE
 
         # DONE: read lat0, lon0 from colliders into floating point values
-        lat_long = []
-        with open('colliders.csv') as f:
-            home_data = f.readlines()[0].split(", ")
-        for st in home_data: 
-                lat_long.append(float(st.split(" ")[1]))
-
+        with open('colliders.csv', newline='') as f:
+            csv_reader = csv.reader(f)
+            row_one = next(csv_reader)
+        latitude = row_one[0].strip('lat0')
+        longitude = row_one[1].strip(' lon0')
+        lat_f = float(latitude)
+        long_f = float(longitude)
+        print(lat_f)
+        print(long_f)
         # DONE: set home position to (lon0, lat0, 0)
-        print(lat_long)
-        self.set_home_position(float(lat_long[0]), float(lat_long[1]), 0)
-        print(self.global_home[0], self.global_home[1])
+        self.set_home_position(long_f, lat_f, 0.0)
+        print(self.global_home)
 
         # DONE: retrieve current global position
-        lat = self._latitude
-        lon = self._longitude
-        alt = self._altitude
+        global_position = (self._longitude, self._latitude, self._altitude)
+        print(global_position)
         # DONE: convert to current local position using global_to_local()
-        current_loc_pos = global_to_local(self.global_position, self.global_home)
+        current_loc_pos = global_to_local(global_position, self.global_home)
         print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
                                                                          self.local_position))
         # Read in obstacle map
